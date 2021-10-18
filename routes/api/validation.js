@@ -1,4 +1,5 @@
 const Joi = require("joi");
+Joi.objectId = require('joi-objectid')(Joi)
 
 const schemaContact = Joi.object({
   name: Joi.string().min(1).max(16).required(),
@@ -8,12 +9,11 @@ const schemaContact = Joi.object({
     .max(14)
     .pattern(/^[0-9]+$/)
     .required(),
+  favorite: Joi.boolean().required()
 });
 
-const pattern = "\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}";
-
 const schemaContactId = Joi.object({
-  contactId: Joi.string().pattern(new RegExp(pattern)).required(),
+  contactId: Joi.objectId().required()
 });
 
 const schemaUpdateContact = Joi.object({
@@ -23,9 +23,14 @@ const schemaUpdateContact = Joi.object({
     .min(6)
     .max(14)
     .pattern(/^[0-9]+$/),
+  favorite: Joi.boolean()
 })
   .min(1)
-  .max(3);
+  .max(4);
+
+const schemaStatusConatc = Joi.object({
+  favorite: Joi.boolean().required()
+})
 
 const validate = async (schema, obj, res, next) => {
   try {
@@ -48,3 +53,7 @@ module.exports.validateContactId = async (req, res, next) => {
 module.exports.validateUpdatingContact = async (req, res, next) => {
   return await validate(schemaUpdateContact, req.body, res, next);
 };
+
+module.exports.validateStatusContact = async (req, res, next) => {
+  return await validate(schemaStatusConatc, req.body, res, next)
+}
