@@ -1,67 +1,57 @@
 const Contacts = require('../repository/contacts');
+const {CustomError} = require('../helpers/custom-error')
 
-const getContacts = async (req, res, next) => {
-  try {
-    const contacts = await Contacts.listContacts();
-    res.json({ status: "success", code: 200, data: { contacts } });
-  } catch (error) {
-    next(error);
-  }
+const getContacts = async (req, res) => {
+    const userId = req.user._id
+    const data = await Contacts.listContacts(userId, req.query);
+    res.json({ status: "success", code: 200, data: { ...data } });
 }
 
 const getContactById = async (req, res, next) => {
-  try {
-    const contact = await Contacts.getContactById(String(req.params.contactId));
+    const userId = req.user._id
+    const contact = await Contacts.getContactById(req.params.contactId, userId);
     if (contact) {
       return res
         .status(200)
         .json({ status: "success", code: 200, data: { contact } });
     }
-    return res
-      .status(404)
-      .json({ status: "Error", code: 404, message: "Not Found" });
-  } catch (error) {
-    next(error);
-  }
+
+  throw new CustomError(404, 'Not Found')
+   
+ 
 }
 
 const addContact = async (req, res, next) => {
-  try {
-    const contact = await Contacts.addContact(req.body);
+
+    const userId = req.user._id
+    const contact = await Contacts.addContact({...req.body, owner: userId});
     if (contact) {
     return  res.json({ status: "success", code: 201, data: { contact } });
     }
-    return res.json({
-      status: "Bad Request",
-      code: 400,
-      message: "missing required name field",
-    });
-  } catch (error) {
-    next(error);
-  }
+ 
+    throw new CustomError(404, 'Not Found')
 }
 
 const deleteContact = async (req, res, next) => {
-  try {
-    const contact = await Contacts.removeContact(req.params.contactId);
+
+    const userId = req.user._id
+    const contact = await Contacts.removeContact(req.params.contactId, userId);
     if (contact) {
       return res
         .status(200)
         .json({ status: "success", code: 200, data: { contact } });
     }
-    return res
-      .status(404)
-      .json({ status: "Error", code: 404, message: "Not Found" });
-  } catch (error) {
-    next(error);
-  }
+    throw new CustomError(404, 'Not Found')
+  
 }
 
 const updateContact = async (req, res, next) => {
-    try {
+
+      const userId = req.user._id
       const updatedContact = await Contacts.updateContact(
         req.params.contactId,
-        req.body
+        req.body,
+        userId
       );
       if (updatedContact) {
         return res.json({
@@ -70,19 +60,16 @@ const updateContact = async (req, res, next) => {
           data: { updatedContact },
         });
       }
-      return res
-        .status(400)
-        .json({ status: "Bad Request", code: 400, message: "missing fields" });
-    } catch (error) {
-      next(error);
-    }
+      throw new CustomError(404, 'Not Found')
+   
   }
 
 const updateStatusContact = async (req, res, next) => {
-      try {
+      const userId = req.user._id
       const updatedContact = await Contacts.updateContact(
         req.params.contactId,
-        req.body
+        req.body,
+        userId
       );
       if (updatedContact) {
         return res.json({
@@ -91,12 +78,7 @@ const updateStatusContact = async (req, res, next) => {
           data: { updatedContact },
         });
       }
-      return res
-        .status(400)
-        .json({ status: "Bad Request", code: 400, message: "missing field favorite" });
-    } catch (error) {
-      next(error);
-    }
+  throw new CustomError(400, 'missing field favorite')
 }
 
 module.exports = {

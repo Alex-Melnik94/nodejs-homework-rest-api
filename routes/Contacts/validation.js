@@ -9,7 +9,7 @@ const schemaContact = Joi.object({
     .max(14)
     .pattern(/^[0-9]+$/)
     .required(),
-  favorite: Joi.boolean().required()
+  favorite: Joi.boolean()
 });
 
 const schemaContactId = Joi.object({
